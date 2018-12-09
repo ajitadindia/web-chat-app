@@ -1,16 +1,7 @@
 <?php
 
-/*****************************************************
-* #### Chat Realtime (BETA) ####
-* Coded by Ican Bachors 2016.
-* https://github.com/bachors/Chat-Realtime
-* Updates will be posted to this site.
-* Aplikasi ini akan selalu bersetatus (BETA) 
-* Karena akan terus di update & dikembangkan.
-* Maka dari itu jangan lupa di fork & like ya sob :).
-*****************************************************/
 
-class Chat_realtime {
+class Chat {
 	
 	private $name;
 	private $host;
@@ -40,15 +31,15 @@ class Chat_realtime {
 		return $data;
 	}
 	
-	function get_message($tipe, $ke, $user){
+	function get_message($type, $user_id, $user){
 		$data = array();
-		if($tipe == 'rooms'){
-			if($ke == 'all'){
-				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE tipe=? order by date DESC");
-				$sql->execute(array($tipe));
+		if($type == 'rooms'){
+			if($user_id == 'all'){
+				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE type=? order by date DESC");
+				$sql->execute(array($type));
 			}else{
-				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE ke=? order by date DESC");
-				$sql->execute(array($ke));
+				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE user_id=? order by date DESC");
+				$sql->execute(array($user_id));
 			}
 			while($r = $sql->fetch()){
 				$data[] = array(
@@ -56,18 +47,18 @@ class Chat_realtime {
 					'avatar' => $r['avatar'],
 					'message' => $r['message'],
 					'image' => $r['image'],
-					'tipe' => $r['tipe'],
+					'type' => $r['type'],
 					'date' => $r['date'],
-					'selektor' => $r['ke']
+					'selektor' => $r['user_id']
 				);
 			}
-		}else if($tipe == 'users'){
-			if($ke == 'all'){
-				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE (name = :id1 AND tipe= :id2) OR (ke = :id1 AND tipe = :id2) order by date DESC");
-				$sql->execute(array(':id1' => $user, ':id2' => $tipe));
+		}else if($type == 'users'){
+			if($user_id == 'all'){
+				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE (name = :id1 AND type= :id2) OR (user_id = :id1 AND type = :id2) order by date DESC");
+				$sql->execute(array(':id1' => $user, ':id2' => $type));
 				$tmp = array();
 				while($r = $sql->fetch()){
-					$name = ($r['name'] == $user ? $r['ke'] : $r['name']);
+					$name = ($r['name'] == $user ? $r['user_id'] : $r['name']);
 					if(!in_array($name, $tmp)){
 						array_push($tmp, $name);
 						$get=$this->dbh->prepare("SELECT status FROM users WHERE name=?");
@@ -83,17 +74,17 @@ class Chat_realtime {
 					}
 				}
 			}else{
-				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE (name = :id1 AND ke= :id2) OR (name = :id2 AND ke = :id1) order by date DESC");
-				$sql->execute(array(':id1' => $user, ':id2' => $ke));
+				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE (name = :id1 AND user_id= :id2) OR (name = :id2 AND user_id = :id1) order by date DESC");
+				$sql->execute(array(':id1' => $user, ':id2' => $user_id));
 				while($r = $sql->fetch()){
 					$data[] = array(
 						'name' => $r['name'],
 						'avatar' => $r['avatar'],
 						'message' => $r['message'],
 						'image' => $r['image'],
-						'tipe' => $r['tipe'],
+						'type' => $r['type'],
 						'date' => $r['date'],
-						'selektor' => ($r['name'] == $user ? $r['ke'] : $r['name'])
+						'selektor' => ($r['name'] == $user ? $r['user_id'] : $r['name'])
 					);
 				}
 			}
@@ -125,10 +116,10 @@ class Chat_realtime {
 		return $data;
 	}
 	
-	function send_message($name, $ke, $message, $image, $date, $avatar, $tipe){		
+	function send_message($name, $user_id, $message, $image, $date, $avatar, $type){		
 		$data = array();
-		$sql=$this->dbh->prepare("INSERT INTO messages (name,ke,avatar,message,image,tipe,date) VALUES (?,?,?,?,?,?,?)");
-		$sql->execute(array($name,$ke,$avatar,$message,$image,$tipe,$date));
+		$sql=$this->dbh->prepare("INSERT INTO messages (name,user_id,avatar,message,image,type,date) VALUES (?,?,?,?,?,?,?)");
+		$sql->execute(array($name,$user_id,$avatar,$message,$image,$type,$date));
 		$data['status'] = 'success';
 		return $data;
 	}

@@ -1,17 +1,22 @@
 // MySQL API
-var apis = 'api.php'; 
+var apis = 'api.php';
 
 // set image directori
 var imageDir = 'image';
 
 // Replace with: your firebase account
 var config = {
-    apiKey: "AIzaSyDfKpgAUCOja3z-tc0yHOqzOCEGo0seJAQ",
-    databaseURL: "https://chatws-40480.firebaseio.com"
+	apiKey: "",
+	authDomain: "",
+	databaseURL: "",
+	projectId: "",
+	storageBucket: "",
+	messagingSenderId: ""
 };
+
 firebase.initializeApp(config);
 
 // create firebase child
 var dbRef = firebase.database().ref(),
-	messageRef = dbRef.child('message'),
-	userRef = dbRef.child('user');
+messageRef = dbRef.child('message'),
+userRef = dbRef.child('user');
