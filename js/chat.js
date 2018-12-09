@@ -329,7 +329,7 @@ function notifyMe(message,title) {
     Notification.requestPermission();
   else {
     var notification = new Notification(title, {
-      icon: 'image/chat-circle.png',
+      icon: 'https://cdn0.iconfinder.com/data/icons/social-messaging-ui-color-shapes/128/chat-circle-blue-512.png',
       body: message,
     });
 
