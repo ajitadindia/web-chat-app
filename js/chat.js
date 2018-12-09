@@ -204,6 +204,7 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 
 	k.on("child_added", function (a) {
 		//console.log("added", a.key, a.val());
+		var not_title = 'New Group Message';
 		var b = a.val().name,
 		user_id = a.val().user_id;
 
@@ -222,6 +223,7 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 		else {
 			// inbox user
 			if (user_id == m) {
+				not_title = 'New Message from : ' + a.val().name;
 				if (!$('.side-one #' + b).length) {
 					var newUser = {
 						status: "online",
@@ -248,6 +250,7 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 
 			// send message
 			else if (b == m) {
+				not_title = '';
 				$('.side-one #' + user_id + ' .time-meta').html(timeToWords(a.val().date));
 				$('.side-one #' + user_id + ' .sideBar-message').html('<i class="fa fa-check"></i> ' + htmlEntities(a.val().message));
 				if (uKe == user_id) {
@@ -255,7 +258,10 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 				}
 			}
 		}
-
+		if ( '' != not_title ) {
+			var not_message = urltag(htmlEntities(a.val().message));
+			notifyMe(not_message,not_title);
+		}
 		$('.placeholder').magnificPopup({
 			type: 'image',
 			closeOnContentClick: true,
@@ -306,6 +312,34 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 		document.getElementById('heading-name-meta').innerHTML = name;
 		document.getElementById('heading-online').innerHTML = status;
 	}
+
+// request permission on page load
+document.addEventListener('DOMContentLoaded', function () {
+  if (!Notification) {
+    alert('Desktop notifications not available in your browser. Try Chromium.');
+    return;
+  }
+
+  if (Notification.permission !== "granted")
+    Notification.requestPermission();
+});
+
+function notifyMe(message,title) {
+  if (Notification.permission !== "granted")
+    Notification.requestPermission();
+  else {
+    var notification = new Notification(title, {
+      icon: 'image/chat-circle.png',
+      body: message,
+    });
+
+    notification.onclick = function () {
+      window.open('/');
+    };
+
+  }
+
+}
 
 	function messageHTML(a, bottom) {
 		var image = (a.image != undefined ? a.image : a.images);
