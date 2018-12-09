@@ -204,12 +204,13 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 
 	k.on("child_added", function (a) {
 		//console.log("added", a.key, a.val());
-		var not_title = 'New Group Message';
+		var not_title = '';
 		var b = a.val().name,
 		user_id = a.val().user_id;
 
 		// inbox rooms
 		if ($('#' + user_id).data('type') == 'rooms') {
+			not_title = 'New Group Message';
 			if (uKe == user_id) {
 				messageHTML(a.val(), true);
 			} else {
