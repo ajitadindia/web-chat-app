@@ -656,6 +656,13 @@ function notifyMe(message,title) {
 		document.getElementsByClassName("side")[0].style.display = "none";
 	});
 
+	$('.emoji-wysiwyg-editor').keydown(function (e) {
+		var key = e.which;
+		if(key == 13 && '' !=  document.getElementById('comment').value) {
+			$('#send').trigger("click");
+		}
+	});
+
 	//send chat
 	document.getElementById("send").addEventListener("click", function () {
 		var a = new Date(),
@@ -724,7 +731,7 @@ function notifyMe(message,title) {
 
 			});
 		} else {
-			alert('Please fill atlease message!')
+			alert('Please write a message!')
 		}
 	});
 

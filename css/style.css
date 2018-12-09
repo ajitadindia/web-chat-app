@@ -900,3 +900,13 @@ overflow-x: hidden;
     font-size: 1.8em !important;
   }
 }
+.emoji-menu .emoji-items {
+	width: 100%;
+    float: left;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+}
+.emoji-menu .emoji-items-wrap {
+	overflow: unset;
+}
