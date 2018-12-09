@@ -56,10 +56,11 @@ document.getElementsByClassName("form-signin")[0].onsubmit = function () {
 
 function loginFunction() {
 	document.getElementById("ref").innerHTML = "<center>Wait...</center>";
-	var i = document.getElementById("username").value,
+	var i = document.getElementById("username").value;
+	var j = document.getElementById("password").value;
 	avatar = document.getElementById("avatar").value;
-	if (i != '' && avatar != '') {
-		ajax("POST", "data=login&name=" + i + "&avatar=" + avatar, function (res) {
+	if (i != '' && j != '' && avatar != '') {
+		ajax("POST", "data=login&name=" + i + "&avatar=" + avatar+ "&password=" + j, function (res) {
 			var a = JSON.parse(res);
 			if (a.status == 'success') {
 				var x = new Date(),
@@ -79,11 +80,11 @@ function loginFunction() {
 				userRef.push(h);
 				window.location.href = "/";
 			} else {
-				document.getElementById("ref").innerHTML = "<div class='alert alert-danger'>Username does not exit.</div>";
+				document.getElementById("ref").innerHTML = "<div class='alert alert-danger'>Wrong Input.</div>";
 			}
 		});
 	} else {
-		alert('Form input ada yang belum di isi')
+		alert('Please Enter User name password')
 	}
 }
 
@@ -227,7 +228,7 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 						name: b,
 						date: a.val().date,
 						avatar: a.val().avatar,
-						selektor: "from"
+						selector: "from"
 					};
 					chatUser.push(newUser);
 					sideOneHTML(newUser);
@@ -392,8 +393,8 @@ var chat_data = function (j, k, l, m, n, imageDir) {
 		b += '	 			<span class="time-meta pull-right">' + timeToWords(a.date) + '</span>';
 		b += '			</div>';
 		b += '			<div class="col-sm-12 sideBar-message">';
-		if (a.selektor != undefined) {
-			if (a.selektor == "to") {
+		if (a.selector != undefined) {
+			if (a.selector == "to") {
 				b += '<i class="fa fa-check"></i> ' + htmlEntities(a.message);
 			} else {
 				b += htmlEntities(a.message);

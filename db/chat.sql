@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `messages` (
 CREATE TABLE IF NOT EXISTS `users` (
   `user_id` int(20) NOT NULL,
   `name` text NOT NULL,
+  `password` text NOT NULL,
   `avatar` varchar(500) NOT NULL,
   `login` varchar(20) NOT NULL,
   `status` varchar(20) NOT NULL

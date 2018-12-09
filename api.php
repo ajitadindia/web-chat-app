@@ -3,8 +3,9 @@ session_start();
 		
 include_once('php/config.php');
 include_once('php/chat.php');
+include_once('vendor/autoload.php');
 $chat = new Chat($name, $host, $username, $password, $imageDir);
-		
+
 $data = array();
 if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 	if(!empty($_POST['data'])){
@@ -18,8 +19,8 @@ if(isset($_POST) and $_SERVER['REQUEST_METHOD'] == "POST"){
 				$data['status'] = 'error';
 			}
 		}else if($_POST['data'] == 'login'){
-			if(!empty($_POST['name']) && !empty($_POST['avatar'])){
-				$data = $chat->user_login($_POST['name'], $_POST['avatar']);
+			if(!empty($_POST['name']) && !empty($_POST['avatar']) && !empty($_POST['password'])){
+				$data = $chat->user_login($_POST['name'], $_POST['password'], $_POST['avatar']);
 				if($data['status'] == 'success'){
 					$_SESSION['user'] = $_POST['name'];
 					$_SESSION['avatar'] = $_POST['avatar'];

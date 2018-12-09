@@ -8,6 +8,9 @@ class Chat {
 	private $username;
 	private $password;
 	private $imageDir;
+	//generate and set key first time in the below variable
+	//$key = (new \CodeCollab\Encryption\Defusev2\Key())->generate();
+	private $key = 'def00000062819ccdb3a11c44a260ec7f76cf72ed9a7dce09d8ea5646263ae4c2164a930eb88d636509df04e6e07d6435ff8804c69adb7bf031b89702d4c10fc7fa91406';
 	
 	function __construct($name, $host, $username, $password, $imageDir)
     {
@@ -15,19 +18,31 @@ class Chat {
 		$this->imageDir = $imageDir;
     }
 	
-	function user_login($user, $avatar){
+	function user_login($user, $password, $avatar ){
 		$name = htmlspecialchars($user);
 		$data = array();
-		$sql=$this->dbh->prepare("SELECT name FROM users WHERE name=?");
+		$sql=$this->dbh->prepare("SELECT name,password FROM users WHERE name=?");
 		$sql->execute(array($name));
+		$e_password = $this->encrypt_message($password);
 		if($sql->rowCount() == 0){
-			$upd=$this->dbh->prepare("INSERT INTO users (name,avatar,login,status) VALUES (?,?,NOW(),?)");
-			$upd->execute(array($name, $avatar, 'online'));
+			$upd=$this->dbh->prepare("INSERT INTO users (name,password,avatar,login,status) VALUES (?,?,?,NOW(),?)");
+			$status = $upd->execute(array($name, $e_password, $avatar, 'online'));
+			$data['status'] = 'success';
+		}elseif($sql->rowCount() == 1){
+			while($r = $sql->fetch()){
+				$d_password = $this->decrypt_message($r['password']);
+				if( $d_password == $password ) {
+					$upd=$this->dbh->prepare("UPDATE users SET avatar=?, login=NOW(), status=? WHERE name=?");
+					$upd->execute(array($avatar, 'online', $name));
+					$data['status'] = 'success';
+				} else {
+					$data['status'] = 'error';
+				}
+				break;
+			}
 		}else{
-			$upd=$this->dbh->prepare("UPDATE users SET avatar=?, login=NOW(), status=? WHERE name=?");
-			$upd->execute(array($avatar, 'online', $name));
+			$data['status'] = 'error';
 		}
-		$data['status'] = 'success';
 		return $data;
 	}
 	
@@ -42,14 +57,15 @@ class Chat {
 				$sql->execute(array($user_id));
 			}
 			while($r = $sql->fetch()){
+				$decryptedData = $this->decrypt_message($r['message']);
 				$data[] = array(
 					'name' => $r['name'],
 					'avatar' => $r['avatar'],
-					'message' => $r['message'],
+					'message' => $decryptedData,
 					'image' => $r['image'],
 					'type' => $r['type'],
 					'date' => $r['date'],
-					'selektor' => $r['user_id']
+					'selector' => $r['user_id']
 				);
 			}
 		}else if($type == 'users'){
@@ -63,13 +79,14 @@ class Chat {
 						array_push($tmp, $name);
 						$get=$this->dbh->prepare("SELECT status FROM users WHERE name=?");
 						$get->execute(array($name));
+						$decryptedData = $this->decrypt_message($r['message']);
 						$data[] = array(
 							'name' => $name,
 							'avatar' => $r['avatar'],
 							'date' => $r['date'],
-							'message' => $r['message'],
+							'message' => $decryptedData,
 							'status' => $get->fetch()['status'],
-							'selektor' => ($r['name'] == $user ? "to" : "from")
+							'selector' => ($r['name'] == $user ? "to" : "from")
 						);
 					}
 				}
@@ -77,14 +94,15 @@ class Chat {
 				$sql=$this->dbh->prepare("SELECT * FROM messages WHERE (name = :id1 AND user_id= :id2) OR (name = :id2 AND user_id = :id1) order by date DESC");
 				$sql->execute(array(':id1' => $user, ':id2' => $user_id));
 				while($r = $sql->fetch()){
+					$decryptedData = $this->decrypt_message($r['message']);
 					$data[] = array(
 						'name' => $r['name'],
 						'avatar' => $r['avatar'],
-						'message' => $r['message'],
+						'message' => $decryptedData,
 						'image' => $r['image'],
 						'type' => $r['type'],
 						'date' => $r['date'],
-						'selektor' => ($r['name'] == $user ? $r['user_id'] : $r['name'])
+						'selector' => ($r['name'] == $user ? $r['user_id'] : $r['name'])
 					);
 				}
 			}
@@ -118,8 +136,9 @@ class Chat {
 	
 	function send_message($name, $user_id, $message, $image, $date, $avatar, $type){		
 		$data = array();
+		$encryptedData = $this->encrypt_message($message);
 		$sql=$this->dbh->prepare("INSERT INTO messages (name,user_id,avatar,message,image,type,date) VALUES (?,?,?,?,?,?,?)");
-		$sql->execute(array($name,$user_id,$avatar,$message,$image,$type,$date));
+		$sql->execute(array($name,$user_id,$avatar,$encryptedData,$image,$type,$date));
 		$data['status'] = 'success';
 		return $data;
 	}
@@ -155,4 +174,11 @@ class Chat {
 		imagedestroy($im);
 	}
 	
+	function encrypt_message($message) {
+		return (new \CodeCollab\Encryption\Defusev2\Encryptor($this->key))->encrypt($message);
+	}
+	
+	function decrypt_message($message) {
+		return (new \CodeCollab\Encryption\Defusev2\Decryptor($this->key))->decrypt($message);
+	}
 }
